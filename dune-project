@@ -5,22 +5,17 @@
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github jatayl/hardcaml_playpen))
 
-(authors "Author Name")
+(authors "James Taylor")
 
-(maintainers "Maintainer Name")
+(maintainers "James Taylor")
 
 (license LICENSE)
 
-(documentation https://url/to/documentation)
-
 (package
  (name hardcaml_playpen)
- (synopsis "A short synopsis")
- (description "A longer description")
- (depends ocaml dune)
- (tags
-  (topics "to describe" your project)))
+ (synopsis "running through the hardcaml documentation")
+ (depends ocaml dune))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project

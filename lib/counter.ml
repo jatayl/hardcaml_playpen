@@ -1,6 +1,5 @@
 open Hardcaml
 open Hardcaml.Signal
-(* open Hardcaml_waveterm *)
 
 module I = struct
   type 'a t = { clock : 'a; clear : 'a; incr : 'a }
@@ -35,7 +34,9 @@ let counter_with_always (i : _ I.t) =
   Always.(
     compile
       [
-        if_ i.clear [ dout <-- 0 ] [ when_ i.incr [ dout <- dout.value +:. 1 ] ];
+        if_ i.clear
+          [ dout <--. 0 ]
+          [ when_ i.incr [ dout <-- dout.value +:. 1 ] ];
       ]);
   { O.dout = dout.value }
 
