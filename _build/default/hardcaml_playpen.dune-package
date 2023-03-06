@@ -1,0 +1,49 @@
+(lang dune 3.6)
+(name hardcaml_playpen)
+(sections (lib .) (libexec .))
+(files
+ (lib
+  (META
+   counter.ml
+   dune-package
+   hardcaml_playpen.a
+   hardcaml_playpen.cma
+   hardcaml_playpen.cmi
+   hardcaml_playpen.cmt
+   hardcaml_playpen.cmx
+   hardcaml_playpen.cmxa
+   hardcaml_playpen.ml
+   hardcaml_playpen__Counter.cmi
+   hardcaml_playpen__Counter.cmt
+   hardcaml_playpen__Counter.cmx
+   opam))
+ (libexec (hardcaml_playpen.cmxs)))
+(library
+ (name hardcaml_playpen)
+ (kind normal)
+ (archives (byte hardcaml_playpen.cma) (native hardcaml_playpen.cmxa))
+ (plugins (byte hardcaml_playpen.cma) (native hardcaml_playpen.cmxs))
+ (native_archives hardcaml_playpen.a)
+ (requires
+  hardcaml
+  hardcaml_waveterm
+  ppx_sexp_conv.runtime-lib
+  sexplib0
+  ppx_deriving_hardcaml.runtime)
+ (main_module_name Hardcaml_playpen)
+ (modes byte native)
+ (modules
+  (wrapped
+   (main_module_name Hardcaml_playpen)
+   (modules
+    ((name Counter)
+     (obj_name hardcaml_playpen__Counter)
+     (visibility public)
+     (impl)))
+   (alias_module
+    (name Hardcaml_playpen)
+    (obj_name hardcaml_playpen)
+    (visibility public)
+    (kind alias)
+    (impl))
+   (wrapped true))))
