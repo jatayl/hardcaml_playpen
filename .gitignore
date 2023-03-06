@@ -1,0 +1,5 @@
+# dune ocaml build
+_build
+
+# macos
+.DS_Store
