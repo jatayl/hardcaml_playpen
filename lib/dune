@@ -1,6 +1,6 @@
 (library
  (public_name hardcaml_playpen)
  (name hardcaml_playpen)
- (libraries hardcaml hardcaml_waveterm)
+ (libraries hardcaml hardcaml_waveterm base)
  (preprocess
   (pps ppx_deriving_hardcaml)))
