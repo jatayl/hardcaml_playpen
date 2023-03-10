@@ -3,4 +3,4 @@
  (name hardcaml_playpen)
  (libraries hardcaml hardcaml_waveterm base)
  (preprocess
-  (pps ppx_deriving_hardcaml)))
+  (pps ppx_deriving_hardcaml ppx_compare ppx_enumerate ppx_sexp_message)))
