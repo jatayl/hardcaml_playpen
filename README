@@ -1,0 +1,7 @@
+hardcaml_playpen
+
+so far, this directory mostly consists of (more or less copied) examples from the hardcaml documentation (for pedagogical purposes!): https://github.com/janestreet/hardcaml/tree/master/docs
+
+examples that are novel:
+
+- sha256

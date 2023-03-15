@@ -1,2 +1,5 @@
 (test
- (name hardcaml_playpen))
+ (name hardcaml_playpen)
+ (libraries expect_test_helpers_core hardcaml_playpen)
+ (preprocess
+  (pps ppx_jane ppx_deriving_hardcaml)))

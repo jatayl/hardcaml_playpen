@@ -37,9 +37,7 @@ let create (i : _ I.t) =
           [
             ( S_wait,
               [
-                f0 <--. 1;
-                f1 <--. 1;
-                remaining <-- i.n -:. 1;
+                f0 <--. 1; f1 <--. 1; remaining <-- i.n -:. 1;
                 when_ i.start
                   [
                     if_ (i.n ==:. 0)
@@ -52,8 +50,7 @@ let create (i : _ I.t) =
                 if_ (remaining.value ==:. 0)
                   [ sm.set_next S_write_result ]
                   [
-                    remaining <-- remaining.value -:. 1;
-                    f0 <-- f1.value;
+                    remaining <-- remaining.value -:. 1; f0 <-- f1.value;
                     f1 <-- f0.value +: f1.value;
                   ];
               ] );
