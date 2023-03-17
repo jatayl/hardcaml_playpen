@@ -41,6 +41,15 @@ let round (alphabet : Always.Variable.t) (kp : Always.Variable.t) =
 let split_block = split_msb ~exact:true ~part_width:32
 let select_from_block i blk = blk |> split_block |> mux i
 
+let update_block x i blk =
+  let x_r = x @: zero 480 in
+  let updates = List.(init 16 (fun i -> i * 32) |> map (sra x_r)) in
+  let update = mux i updates in
+  let i_mask = zero 32 @: one 480 in
+  let masks = List.(init 16 (fun i -> i * 32) |> map (sra i_mask)) in
+  let mask = mux i masks in
+  blk &: mask |: update
+
 let h =
   [
     0x6a09e667; 0xbb67ae85; 0x3c6ef372; 0xa54ff53a; 0x510e527f; 0x9b05688c;
@@ -138,6 +147,7 @@ let create (i : _ I.t) =
                           +: wo0.value;
                       t2 <-- t1.value +: select_from_block iteration.value k;
                       proc (round alphabet t2); (* set wo0 to t1 *)
+                      w <-- update_block t1.value w_index.value w.value;
                     ]; iteration <-- iteration.value +:. 1;
                   w_index <-- w_index.value +:. 1;
                 ];
