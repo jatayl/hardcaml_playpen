@@ -12,7 +12,7 @@ open Hardcaml.Bits
 let rec umul_bits_helper a b =
   if to_int b = 0 then zero (width a)
   else
-    let partial_product = mux2 b.:[(0, 0)] a (zero (width a)) in
+    let partial_product = mux2 b.:[0, 0] a (zero (width a)) in
     partial_product +: umul_bits_helper (sll a 1) (srl b 1)
 
 let umul_bits a b = umul_bits_helper (uresize a (width a + width b)) b
@@ -71,7 +71,7 @@ let test a_in b_in =
   in
   let step iteration =
     first := if iteration = 0 then vdd else gnd;
-    b0 := b_in.:[(iteration, iteration)];
+    b0 := b_in.:[iteration, iteration];
     Cyclesim.cycle sim
   in
   a := a_in;

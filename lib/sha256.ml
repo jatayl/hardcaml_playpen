@@ -24,17 +24,17 @@ let round (alphabet : Always.Variable.t) (kp : Always.Variable.t) =
   let t2 = Variable.wire ~default:(zero 32) in
   let alphabet' = Variable.wire ~default:(zero 256) in
   [
-    a <-- alphabet.value.:[(31, 0)]; b <-- alphabet.value.:[(63, 32)];
-    c <-- alphabet.value.:[(95, 64)]; d <-- alphabet.value.:[(127, 86)];
-    e <-- alphabet.value.:[(159, 128)]; f <-- alphabet.value.:[(191, 160)];
-    g <-- alphabet.value.:[(223, 192)]; h <-- alphabet.value.:[(255, 224)];
+    a <-- alphabet.value.:[31, 0]; b <-- alphabet.value.:[63, 32];
+    c <-- alphabet.value.:[95, 64]; d <-- alphabet.value.:[127, 96];
+    e <-- alphabet.value.:[159, 128]; f <-- alphabet.value.:[191, 160];
+    g <-- alphabet.value.:[223, 192]; h <-- alphabet.value.:[255, 224];
     t1
     <-- h.value +: capsigma1 e.value +: ch e.value f.value g.value +: kp.value;
     t2 <-- capsigma0 a.value +: maj a.value b.value c.value;
     alphabet'
-    <-- alphabet.value.:[(85, 0)]
+    <-- alphabet.value.:[95, 0]
         @: (d.value +: t1.value)
-        @: alphabet.value.:[(128, 223)]
+        @: alphabet.value.:[223, 128]
         @: (t1.value +: t2.value); alphabet <-- rotr alphabet'.value 32;
   ]
 
@@ -102,13 +102,12 @@ let create (i : _ I.t) =
   let result = Variable.wire ~default:(zero 256) in
   let s =
     let spec = Reg_spec.override r_sync ~clear_to:h in
-    Variable.reg ~width:32 ~enable:vdd spec
+    Variable.reg ~width:256 ~enable:vdd spec
   in
   let alphabet = Variable.reg ~width:256 ~enable:vdd r_sync in
-  let w = Variable.reg ~width:256 ~enable:vdd r_sync in
+  let w = Variable.reg ~width:512 ~enable:vdd r_sync in
   let iteration = Variable.reg ~width:7 ~enable:vdd r_sync in
   let w_index = Variable.reg ~width:4 ~enable:vdd r_sync in
-  (* is there really no better way of doing tempvars??? *)
   let t1 = Variable.wire ~default:(zero 32) in
   let t2 = Variable.wire ~default:(zero 32) in
   let wo0 = Variable.wire ~default:(zero 32) in
@@ -160,3 +159,60 @@ let create (i : _ I.t) =
         ];
     ];
   { O.done_ = done_.value; result = result.value; state = sm.current }
+
+let hello_world_padded =
+  let open Bits in
+  [
+    104; 101; 108; 108; 111; 32; 119; 111; 114; 108; 100; 128; 0; 0; 0; 0; 0; 0;
+    0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0;
+    0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 88;
+  ]
+  |> List.map (of_int ~width:8)
+  |> concat_msb
+
+let print_result r =
+  let open Bits in
+  print_string "0x";
+  for i = 0 to 7 do
+    Printf.printf "%04x" (to_int r.:[(i + 1) * 32 - 1, i * 32])
+  done;
+  print_string "\n"
+
+let sha256_testbench (sim : (_ I.t, _ O.t) Cyclesim.t) =
+  let inputs, outputs = (Cyclesim.inputs sim, Cyclesim.outputs sim) in
+  let print_state_and_outputs () =
+    let state = Base.List.nth_exn States.all (Bits.to_int !(outputs.state)) in
+    let done_ = Bits.is_vdd !(outputs.done_) in
+    let result = Bits.to_int !(outputs.result) in
+    Stdio.print_s
+      [%message (state : States.t) (done_ : Base.bool) (result : Base.int)]
+  in
+
+  Cyclesim.reset sim;
+  inputs.clear := Bits.vdd;
+  Cyclesim.cycle sim;
+  inputs.clear := Bits.gnd;
+
+  print_state_and_outputs ();
+
+  inputs.start := Bits.vdd;
+  inputs.block := hello_world_padded;
+  Cyclesim.cycle sim;
+  print_state_and_outputs ();
+  inputs.start := Bits.gnd;
+
+  for _ = 0 to 64 do
+    Cyclesim.cycle sim;
+    print_state_and_outputs ()
+  done;
+  print_result !(outputs.result);
+  Cyclesim.cycle sim
+
+module Waveform = Hardcaml_waveterm.Waveform
+
+let waves () =
+  let module Sim = Cyclesim.With_interface (I) (O) in
+  let sim = Sim.create create in
+  let waves, sim = Waveform.create sim in
+  sha256_testbench sim;
+  waves
